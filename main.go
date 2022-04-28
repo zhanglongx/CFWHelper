@@ -37,6 +37,7 @@ var (
 var errLog *log.Logger
 
 func main() {
+	// FIXME: is not safe to open file when fatal
 	e, err := os.OpenFile("./CFWHelper.log", os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0666)
 
 	if err != nil {
