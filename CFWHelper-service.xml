@@ -1,9 +1,0 @@
-<service>
-  <id>CFWHelper</id>
-  <name>CFWHelper (powered by WinSW)</name>
-  <description>This is a CFWHelper service. It provides extra features for Clash.</description>
-  <executable>%BASE%\CFWHelper.exe</executable>
-  <onfailure action="restart" delay="10 sec"/>
-  <startmode>Automatic</startmode>
-  <log mode="reset"/>
-</service>
