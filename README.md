@@ -24,7 +24,7 @@ Fortunately, Clash Core provides an external control API that allows us to achie
         PS > go build -ldflags -H=windowsgui .
     ```
 
-2. To Make Clash Core use the fixed external control port. See: https://github.com/Fndroid/clash_for_windows_pkg/issues/2409
+2. Make Clash Core use the fixed external control port. See: https://github.com/Fndroid/clash_for_windows_pkg/issues/2409
 
 3. Make modifies to the main.go (FIXME: It's no need to use configuration file for now):
 
