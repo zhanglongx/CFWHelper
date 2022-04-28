@@ -49,7 +49,7 @@ func main() {
 		Filename:   "./CFWHelper.log",
 		MaxSize:    1,  // megabytes after which new file is created
 		MaxBackups: 3,  // number of backups
-		MaxAge:     15, //days
+		MaxAge:     15, // days
 	})
 
 	lastGlobal := time.Time{}
