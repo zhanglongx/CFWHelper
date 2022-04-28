@@ -35,4 +35,4 @@ Fortunately, Clash Core provides an external control API that allows us to achie
     ```
 4. Run it
 
-    It will output log file(with rotation) under the execute directory.
+    It will output log file (with rotation) under the execute directory.
