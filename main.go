@@ -19,6 +19,8 @@ const (
 	TITLE   = "Clash Global Proxy"
 	// Later in minute
 	LATER = 19
+	// Maximum notifications
+	MAXNOTIFICATIONS = 3
 
 	// CFW Const
 	// Config Url
@@ -51,6 +53,7 @@ func main() {
 	})
 
 	lastGlobal := time.Time{}
+	notifyTimes := 0
 
 	errLog.Println("started")
 
@@ -58,10 +61,15 @@ func main() {
 		NotifyGlobal: func(flag bool) {
 			if !flag {
 				lastGlobal = time.Time{}
+				notifyTimes = 0
 				return
 			}
 
 			// Flag == True
+			if notifyTimes >= MAXNOTIFICATIONS {
+				return
+			}
+
 			if lastGlobal.IsZero() {
 				// first time
 				lastGlobal = time.Now()
@@ -80,6 +88,7 @@ func main() {
 				}
 
 				lastGlobal = time.Now()
+				notifyTimes++
 			}
 		},
 
