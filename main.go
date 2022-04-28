@@ -5,8 +5,10 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"os"
 	"time"
 
+	"gopkg.in/natefinch/lumberjack.v2"
 	"gopkg.in/toast.v1"
 	"gopkg.in/yaml.v2"
 )
@@ -30,8 +32,27 @@ var (
 	ACTION = toast.Action{"protocol", "Remind Later", "remindLater"}
 )
 
+var errLog *log.Logger
+
 func main() {
+	e, err := os.OpenFile("./CFWHelper.log", os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0666)
+
+	if err != nil {
+		fmt.Printf("error opening file: %v", err)
+		os.Exit(1)
+	}
+
+	errLog = log.New(e, "", log.Ldate|log.Ltime)
+	errLog.SetOutput(&lumberjack.Logger{
+		Filename:   "./CFWHelper.log",
+		MaxSize:    1,  // megabytes after which new file is created
+		MaxBackups: 3,  // number of backups
+		MaxAge:     15, //days
+	})
+
 	lastGlobal := time.Time{}
+
+	errLog.Println("started")
 
 	c := &Cfw{
 		NotifyGlobal: func(flag bool) {
@@ -55,7 +76,7 @@ func main() {
 
 				err := notification.Push()
 				if err != nil {
-					log.Fatalln(err)
+					errLog.Fatal(err)
 				}
 
 				lastGlobal = time.Now()
@@ -83,7 +104,7 @@ func (c *Cfw) Listen() {
 	for range time.Tick(time.Second * c.Interval) {
 		config, err := c.queryConfig()
 		if err != nil {
-			log.Fatal(err)
+			errLog.Fatal(err)
 		}
 
 		// Global
