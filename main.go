@@ -31,7 +31,7 @@ const (
 
 var (
 	// Notify Action
-	ACTION = toast.Action{"protocol", "Remind Later", "remindLater"}
+	ACTION = toast.Action{Type: "protocol", Label: "Remind Later", Arguments: "remindLater"}
 )
 
 var errLog *log.Logger
