@@ -6,7 +6,7 @@ CFWHelper is a helper program to provide some missing features for CFW.
 
 [CFW](https://github.com/Fndroid/clash_for_windows_pkg/releases) is an excellent proxy software for Windows base on [Clash Core](https://github.com/Dreamacro/clash).
 
-CFW or Clash (Clash Premium) is powerful (tun mode, external control), but because it is not open sourced, which makes it very difficult to add some features. For example, I need to be notified when the proxy mode is changed to 'global' for an unexpected long time. 
+CFW or Clash (Clash Premium) is powerful (tun mode, external control), but it is not open sourced, which makes it very difficult to add some features. For example, I need to be notified when the proxy mode is changed to 'global' for an unexpected long time. 
 
 Fortunately, Clash Core provides an external control API that allows us to achieve such purposes.
 
