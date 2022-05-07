@@ -29,11 +29,6 @@ const (
 	INTERVAL = 60
 )
 
-var (
-	// Notify Action
-	ACTION = toast.Action{Type: "protocol", Label: "Remind Later", Arguments: "remindLater"}
-)
-
 var errLog *log.Logger
 
 func main() {
@@ -78,9 +73,6 @@ func main() {
 				notification := toast.Notification{
 					AppID: APPNAME,
 					Title: TITLE,
-					Actions: []toast.Action{
-						ACTION,
-					},
 				}
 
 				err := notification.Push()
