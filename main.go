@@ -15,8 +15,9 @@ import (
 
 const (
 	// Notify Const
-	APPNAME = "CFWHelper"
-	TITLE   = "Clash Global Proxy"
+	APPNAME          = "CFWHelper"
+	TITLE_PROXY_MODE = "Clash Global Proxy"
+	TITLE_ALLOW_LAN  = "Clash Allow Lan"
 	// Later in minute
 	LATER = 19
 	// Maximum notifications
@@ -48,42 +49,11 @@ func main() {
 		MaxAge:     15, // days
 	})
 
-	lastGlobal := time.Time{}
-	notifyTimes := 0
-
 	errLog.Println("started")
 
 	c := &Cfw{
-		NotifyGlobal: func(flag bool) {
-			if !flag {
-				lastGlobal = time.Time{}
-				notifyTimes = 0
-				return
-			}
-
-			// Flag == True
-			if notifyTimes >= MAXNOTIFICATIONS {
-				return
-			}
-
-			if lastGlobal.IsZero() {
-				// first time
-				lastGlobal = time.Now()
-			} else if time.Since(lastGlobal).Minutes() > LATER {
-				notification := toast.Notification{
-					AppID: APPNAME,
-					Title: TITLE,
-				}
-
-				err := notification.Push()
-				if err != nil {
-					errLog.Fatal(err)
-				}
-
-				lastGlobal = time.Now()
-				notifyTimes++
-			}
-		},
+		NotifyGlobal:   NotificationHelper(TITLE_PROXY_MODE),
+		NotifyAllowLan: NotificationHelper(TITLE_ALLOW_LAN),
 
 		Url:      URL,
 		Interval: time.Duration(INTERVAL),
@@ -92,8 +62,45 @@ func main() {
 	c.Listen()
 }
 
+func NotificationHelper(title string) func(bool) {
+	lastGlobal := time.Time{}
+	notifyTimes := 0
+
+	return func(flag bool) {
+		if !flag {
+			lastGlobal = time.Time{}
+			notifyTimes = 0
+			return
+		}
+
+		// Flag == True
+		if notifyTimes >= MAXNOTIFICATIONS {
+			return
+		}
+
+		if lastGlobal.IsZero() {
+			// first time
+			lastGlobal = time.Now()
+		} else if time.Since(lastGlobal).Minutes() > LATER {
+			notification := toast.Notification{
+				AppID: APPNAME,
+				Title: title,
+			}
+
+			err := notification.Push()
+			if err != nil {
+				errLog.Fatal(err)
+			}
+
+			lastGlobal = time.Now()
+			notifyTimes++
+		}
+	}
+}
+
 type Cfw struct {
-	NotifyGlobal func(bool)
+	NotifyGlobal   func(bool)
+	NotifyAllowLan func(bool)
 
 	// Config Url
 	Url string
@@ -110,10 +117,12 @@ func (c *Cfw) Listen() {
 		}
 
 		// Global
-		if config["mode"] == "global" {
-			if c.NotifyGlobal != nil {
-				c.NotifyGlobal(true)
-			}
+		if c.NotifyGlobal != nil {
+			c.NotifyGlobal(config["mode"] == "global")
+		}
+
+		if c.NotifyAllowLan != nil {
+			c.NotifyAllowLan(config["allow-lan"] == true)
 		}
 	}
 }
