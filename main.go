@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -14,6 +15,8 @@ import (
 )
 
 const (
+	VERSION = "1.0.1"
+
 	// Notify Const
 	APPNAME          = "CFWHelper"
 	TITLE_PROXY_MODE = "Clash Global Proxy"
@@ -33,6 +36,15 @@ const (
 var errLog *log.Logger
 
 func main() {
+	optVer := flag.Bool("version", false, "print version")
+
+	flag.Parse()
+
+	if *optVer {
+		fmt.Printf("CFWHelper %s\n", VERSION)
+		os.Exit(0)
+	}
+
 	// FIXME: is not safe to open file when fatal
 	e, err := os.OpenFile("./CFWHelper.log", os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0666)
 
