@@ -114,6 +114,8 @@ func (c *Cfw) Listen() {
 		config, err := c.queryConfig()
 		if err != nil {
 			errLog.Fatal(err)
+
+			continue
 		}
 
 		// Global
