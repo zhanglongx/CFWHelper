@@ -14,12 +14,12 @@ Fortunately, Clash Core provides an external control API that allows us to achie
 
 1. Make Clash Core use the fixed external control port. See: https://github.com/Fndroid/clash_for_windows_pkg/issues/2409
 
-2. Make modifies to the main.go (FIXME: It's no need to use configuration file for now):
+2. Make modifies to the main.go (FIXME: add an argument):
 
     ```go
         // CFW Const
         // Config Url
-        URL = "http://127.0.0.1:9090/configs"
+	    CONFIGYML = <path/to/config.yml>
     ```
 
 3. Build the binary.

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"flag"
 	"fmt"
 	"io/ioutil"
@@ -27,8 +28,8 @@ const (
 	MAXNOTIFICATIONS = 3
 
 	// CFW Const
-	// Config Url
-	URL = "http://127.0.0.1:9090/configs"
+	// Config Yml
+	CONFIGYML = "d:\\Users\\zhlx\\.config\\clash\\config.yaml"
 	// Back-ground query interval in second
 	INTERVAL = 60
 )
@@ -67,8 +68,12 @@ func main() {
 		NotifyGlobal:   NotificationHelper(TITLE_PROXY_MODE),
 		NotifyAllowLan: NotificationHelper(TITLE_ALLOW_LAN),
 
-		Url:      URL,
 		Interval: time.Duration(INTERVAL),
+	}
+
+	err = c.LoadYML(CONFIGYML)
+	if err != nil {
+		log.Fatal(err)
 	}
 
 	c.Listen()
@@ -114,18 +119,44 @@ type Cfw struct {
 	NotifyGlobal   func(bool)
 	NotifyAllowLan func(bool)
 
-	// Config Url
-	Url string
+	// Config url
+	url    string
+	secret string
 
 	// Query interval in second
 	Interval time.Duration
+}
+
+func (c *Cfw) LoadYML(configYml string) error {
+	yml, err := ioutil.ReadFile(configYml)
+	if err != nil {
+		return err
+	}
+
+	m := make(map[interface{}]interface{})
+	err = yaml.Unmarshal(yml, m)
+	if err != nil {
+		return err
+	}
+
+	if m["external-controller"] == nil {
+		return errors.New("external-controller not exists")
+	}
+
+	c.url = fmt.Sprintf("http://%s/configs", m["external-controller"].(string))
+
+	if m["secret"] != nil {
+		c.secret = m["secret"].(string)
+	}
+
+	return nil
 }
 
 func (c *Cfw) Listen() {
 	for range time.Tick(time.Second * c.Interval) {
 		config, err := c.queryConfig()
 		if err != nil {
-			errLog.Fatal(err)
+			errLog.Println(err)
 
 			continue
 		}
@@ -142,7 +173,16 @@ func (c *Cfw) Listen() {
 }
 
 func (c *Cfw) queryConfig() (map[interface{}]interface{}, error) {
-	resp, err := http.Get(c.Url)
+	req, err := http.NewRequest("GET", c.url, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", c.secret))
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+
 	if err != nil {
 		return nil, err
 	}
