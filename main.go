@@ -16,11 +16,11 @@ import (
 )
 
 const (
-	VERSION = "1.0.1"
+	VERSION = "1.0.2"
 
 	// Notify Const
 	APPNAME          = "CFWHelper"
-	TITLE_PROXY_MODE = "Clash Global Proxy"
+	TITLE_PROXY_MODE = "Clash Not Rule"
 	TITLE_ALLOW_LAN  = "Clash Allow Lan"
 	// Later in minute
 	LATER = 19
@@ -62,10 +62,11 @@ func main() {
 		MaxAge:     15, // days
 	})
 
+	errLog.Printf("CFWHelper %s", VERSION)
 	errLog.Println("started")
 
 	c := &Cfw{
-		NotifyGlobal:   NotificationHelper(TITLE_PROXY_MODE),
+		NotifyNotRule:  NotificationHelper(TITLE_PROXY_MODE),
 		NotifyAllowLan: NotificationHelper(TITLE_ALLOW_LAN),
 
 		Interval: time.Duration(INTERVAL),
@@ -80,25 +81,25 @@ func main() {
 }
 
 func NotificationHelper(title string) func(bool) {
-	lastGlobal := time.Time{}
-	notifyTimes := 0
+	lastTime := time.Time{}
+	notifyCnt := 0
 
 	return func(flag bool) {
 		if !flag {
-			lastGlobal = time.Time{}
-			notifyTimes = 0
+			lastTime = time.Time{}
+			notifyCnt = 0
 			return
 		}
 
 		// Flag == True
-		if notifyTimes >= MAXNOTIFICATIONS {
+		if notifyCnt >= MAXNOTIFICATIONS {
 			return
 		}
 
-		if lastGlobal.IsZero() {
+		if lastTime.IsZero() {
 			// first time
-			lastGlobal = time.Now()
-		} else if time.Since(lastGlobal).Minutes() > LATER {
+			lastTime = time.Now()
+		} else if time.Since(lastTime).Minutes() > LATER {
 			notification := toast.Notification{
 				AppID: APPNAME,
 				Title: title,
@@ -109,14 +110,14 @@ func NotificationHelper(title string) func(bool) {
 				errLog.Fatal(err)
 			}
 
-			lastGlobal = time.Now()
-			notifyTimes++
+			lastTime = time.Now()
+			notifyCnt++
 		}
 	}
 }
 
 type Cfw struct {
-	NotifyGlobal   func(bool)
+	NotifyNotRule  func(bool)
 	NotifyAllowLan func(bool)
 
 	// Config url
@@ -161,11 +162,12 @@ func (c *Cfw) Listen() {
 			continue
 		}
 
-		// Global
-		if c.NotifyGlobal != nil {
-			c.NotifyGlobal(config["mode"] == "global")
+		// Proxy Mode
+		if c.NotifyNotRule != nil {
+			c.NotifyNotRule(config["mode"] != "rule")
 		}
 
+		// Allow Lan
 		if c.NotifyAllowLan != nil {
 			c.NotifyAllowLan(config["allow-lan"] == true)
 		}
