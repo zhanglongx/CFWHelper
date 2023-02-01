@@ -16,12 +16,15 @@ import (
 )
 
 const (
-	VERSION = "1.0.2"
+	VERSION = "1.0.3"
 
 	// Notify Const
 	APPNAME          = "CFWHelper"
 	TITLE_PROXY_MODE = "Clash Not Rule"
 	TITLE_ALLOW_LAN  = "Clash Allow Lan"
+	BUTTON_NAME      = "Open Clash"
+	BUTTON_URL       = "clash://"
+
 	// Later in minute
 	LATER = 19
 	// Maximum notifications
@@ -65,9 +68,11 @@ func main() {
 	errLog.Printf("CFWHelper %s", VERSION)
 	errLog.Println("started")
 
+	btns := newActionButton()
+
 	c := &Cfw{
-		NotifyNotRule:  NotificationHelper(TITLE_PROXY_MODE),
-		NotifyAllowLan: NotificationHelper(TITLE_ALLOW_LAN),
+		NotifyNotRule:  newNotificationHelper(TITLE_PROXY_MODE, btns),
+		NotifyAllowLan: newNotificationHelper(TITLE_ALLOW_LAN, btns),
 
 		Interval: time.Duration(INTERVAL),
 	}
@@ -80,7 +85,18 @@ func main() {
 	c.Listen()
 }
 
-func NotificationHelper(title string) func(bool) {
+// newActionButton makes a button to open clash via windows protocol
+func newActionButton() []toast.Action {
+	return []toast.Action{
+		{
+			Type:      "protocol",
+			Label:     BUTTON_NAME,
+			Arguments: BUTTON_URL,
+		},
+	}
+}
+
+func newNotificationHelper(title string, actions []toast.Action) func(bool) {
 	lastTime := time.Time{}
 	notifyCnt := 0
 
@@ -101,8 +117,9 @@ func NotificationHelper(title string) func(bool) {
 			lastTime = time.Now()
 		} else if time.Since(lastTime).Minutes() > LATER {
 			notification := toast.Notification{
-				AppID: APPNAME,
-				Title: title,
+				AppID:   APPNAME,
+				Title:   title,
+				Actions: actions,
 			}
 
 			err := notification.Push()
